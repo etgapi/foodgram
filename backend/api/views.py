@@ -106,13 +106,13 @@ class UsersViewSet(djoser_views.UserViewSet):
         return serializer
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Вьюсет для модели тегов"""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
-    permission_classes = (AdminOrReadOnly,)
+    permission_classes = (AllowAny,)
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
