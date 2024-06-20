@@ -1,9 +1,10 @@
 from django.core.validators import RegexValidator
 
-USERNAME_PATTERN = r'^(?!.*\bme\b)[\w.@+-]+\Z'  # r'^[\w.@+-]+\z'
-FIRST_NAME_PATTERN = r'^[a-zA-Zа-яА-Я\s]*$'
-LAST_NAME_PATTERN = r'^[a-zA-Zа-яА-Я\s\-]*$'
-
+from users.constants import (
+    USERNAME_PATTERN,
+    FIRST_NAME_PATTERN,
+    LAST_NAME_PATTERN
+)
 
 username_validator = RegexValidator(
     regex=USERNAME_PATTERN,

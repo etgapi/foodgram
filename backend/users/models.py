@@ -3,13 +3,11 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from users.constants import MAX_EMAIL_LENGTH, MAX_NAME_LENGTH
 from users.validators import (
     first_name_validator,
     last_name_validator,
 )
-
-MAX_NAME_LENGTH = 150  # Максимальная длина имени
-MAX_EMAIL_LENGTH = 254  # Максимальная длина электронной почты
 
 
 class User(AbstractUser):
