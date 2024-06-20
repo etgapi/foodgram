@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django_filters.rest_framework import DjangoFilterBackend
 from django.urls import reverse
 from django.utils import baseconv
-from djoser.views import UserViewSet
+from djoser import views as djoser_views
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -32,7 +32,7 @@ from .serializers import (
 )
 
 
-class UsersViewSet(UserViewSet):
+class UsersViewSet(djoser_views.UserViewSet):
     """Вьюсет для модели пользователей"""
 
     queryset = User.objects.all()
@@ -41,6 +41,14 @@ class UsersViewSet(UserViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ("username", "email")
     permission_classes = (AllowAny,)
+
+    @action(
+        methods=('get',),
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+    )
+    def me(self, request, *args, **kwargs):
+        return super().me(request, *args, **kwargs)
 
     def subscribed(self, request, id=None):
         follower = get_object_or_404(User, id=id)
