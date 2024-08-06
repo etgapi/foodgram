@@ -1,19 +1,15 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
+from recipes.constants import MIN_INGEDIENT_AMOUNT
 from .models import (
-    IngredientsAmount, Favorite, Ingredient, Recipe, ShoppingCart, Tag
+    Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
 )
 
 
-class OtherAdmin(admin.ModelAdmin):
-    pass
-
-
-class IngredientInRecipe(admin.TabularInline):
-    model = Recipe.ingredients.through
-    extra = 10
-    min_num = 1
+class TagAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'slug']
+    list_display_links = ['id', 'name', 'slug']
 
 
 class IngredientAdmin(admin.ModelAdmin):
@@ -27,6 +23,12 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = ("name",)
 
 
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+    min_num = MIN_INGEDIENT_AMOUNT
+
+
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author')
     list_display_links = ('name', 'author')
@@ -35,7 +37,7 @@ class RecipeAdmin(admin.ModelAdmin):
     filter_horizontal = ('tags',)
     list_filter = ('tags',)
     readonly_fields = ('in_favorites',)
-    inlines = (IngredientInRecipe,)
+    inlines = (RecipeIngredientInline,)
 
     fieldsets = (
         (
@@ -61,33 +63,19 @@ class RecipeAdmin(admin.ModelAdmin):
         return Favorite.objects.filter(recipe=obj).count()
 
 
-class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = (
-        "user",
-        "recipe",
-    )
-    list_filter = ("user",)
-
-
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = (
-        "user",
-        "recipe",
-        "__str__"
-        
-    )
-    list_display_links = (
-        "user",
-        "recipe",
-        "__str__"
-        
-    )
-    list_filter = ("user",)
+    
+    list_display = ('id', '__str__')
+    list_display_links = ('id', '__str__')
 
 
-admin.site.register(Tag, OtherAdmin)
-admin.site.register(IngredientsAmount, OtherAdmin)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ('id', '__str__')
+    list_display_links = ('id', '__str__')
+
+
+admin.site.register(Tag, TagAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(ShoppingCart, ShoppingCartAdmin)
 admin.site.register(Favorite, FavoriteAdmin)
+admin.site.register(ShoppingCart, ShoppingCartAdmin)

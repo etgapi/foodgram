@@ -1,14 +1,16 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 
-from .models import Follow, User
+from .models import Subscription, User
 
 
 class UserAdmin(AuthUserAdmin):
 
     list_display_links = (
         'username',
-        'email'
+        'email',
+        'first_name',
+        'last_name',
     )
     search_help_text = 'Поиск по указанным полям'
     list_filter = (
@@ -16,16 +18,12 @@ class UserAdmin(AuthUserAdmin):
     )
 
 
-class FollowAdmin(admin.ModelAdmin):
+class SubscriptionAdmin(admin.ModelAdmin):
     list_display = (
-        "author",
-        "user",
-    )
-    search_fields = (
-        "user",
-        "author",
+        'author',
+        'subscriber',
     )
 
 
 admin.site.register(User, UserAdmin)
-admin.site.register(Follow, FollowAdmin)
+admin.site.register(Subscription, SubscriptionAdmin)

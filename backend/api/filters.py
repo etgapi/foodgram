@@ -35,7 +35,7 @@ class RecipeFilter(FilterSet):
         return queryset
 
 
-class IngredientFilter(SearchFilter):
+class IngredientFilter(FilterSet):
     """Фильтр для ингредиентов"""
     name = CharFilter(lookup_expr='istartswith')
     search_param = "name"

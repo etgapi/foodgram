@@ -1,6 +1,6 @@
+from django.conf import settings
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
 from django.db import models
 
 from users.constants import MAX_EMAIL_LENGTH, MAX_NAME_LENGTH
@@ -21,8 +21,17 @@ class User(AbstractUser):
         'password',
     )
 
+    email = models.EmailField(
+        verbose_name='Адрес электронной почты',
+        max_length=MAX_EMAIL_LENGTH,
+        unique=True,
+        error_messages={
+            'unique': 'Данный адрес уже существует',
+        },
+    )
+
     username = models.CharField(
-        "Логин",
+        verbose_name='Логин',
         max_length=MAX_NAME_LENGTH,
         validators=[UnicodeUsernameValidator(
             message='Имя пользователя содержит недопустимые символы'
@@ -32,78 +41,68 @@ class User(AbstractUser):
             'unique': 'Пользователь с таким именем уже существует',
         }
     )
-    password = models.CharField(
-        "Пароль",
-        max_length=150,
-    )
-    email = models.EmailField(
-        "Адрес электронной почты",
-        max_length=MAX_EMAIL_LENGTH,
-        unique=True,
-        error_messages={
-            'unique': 'Такая почта уже зарегистрирована',
-        },
-    )
     first_name = models.CharField(
-        "Имя",
+        verbose_name='Имя',
         max_length=MAX_NAME_LENGTH,
         validators=(first_name_validator,)
     )
+
     last_name = models.CharField(
-        "Фамилия",
+        verbose_name='Фамилия',
         max_length=MAX_NAME_LENGTH,
         validators=(last_name_validator,)
     )
+
     avatar = models.ImageField(
-        'Аватар',
-        upload_to='avatars/',
+        verbose_name='Аватар',
+        upload_to='users/',
         blank=True,
         null=True
     )
 
     class Meta:
-        verbose_name = "пользователя"
-        verbose_name_plural = "Пользователи"
-        ordering = ["username"]
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
 
     def __str__(self):
         return self.username
 
 
-class Follow(models.Model):
-    """Модель для подписчиков"""
-
+class Subscription(models.Model):
     author = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
+        verbose_name='Автор',
         on_delete=models.CASCADE,
-        related_name="following",
-        verbose_name="Автор",
+        related_name='subscribers',
     )
-    user = models.ForeignKey(
-        User,
+    subscriber = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name='Подписчик',
         on_delete=models.CASCADE,
-        related_name="follower",
-        verbose_name="Подписчик",
+        related_name='subscriptions',
+    )
+    date_added = models.DateTimeField(
+        verbose_name='Подписался',
+        auto_now_add=True,
+        editable=False,
     )
 
     class Meta:
-        ordering = ["author_id"]
-        verbose_name = "Подписка"
+        ordering = ('id', )
+        verbose_name = 'Подписка'
         verbose_name_plural = "Подписки"
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=["user", "author"],
-                name="Вы уже подписаны на этого автора"
+                fields=('author', 'subscriber'),
+                name='Такая подписка уже есть',
             ),
-        ]
+            models.CheckConstraint(
+                check=~models.Q(author=models.F('subscriber')),
+                name='Нет смысла в подписке на себя',
+            ),
+        )
 
-    def clean(self):
-        if self.user == self.author:
-            raise ValidationError('Невозможно подписаться на себя')
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
-
-    def str(self):
-        return f"{self.user} подписался на {self.author}"
+    def __str__(self) -> str:
+        return f'{self.subscriber.username} -> {self.author.username}'
+    

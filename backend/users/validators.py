@@ -14,10 +14,10 @@ username_validator = RegexValidator(
 
 first_name_validator = RegexValidator(
     regex=FIRST_NAME_PATTERN,
-    message='Имя состоит не только из букв.',
+    message='Имя состоит не только из букв',
 )
 
 last_name_validator = RegexValidator(
     regex=LAST_NAME_PATTERN,
-    message='В фамилии встречаются не только буквы пробелы и тире.',
+    message='В фамилии встречаются не только буквы пробелы и тире',
 )
