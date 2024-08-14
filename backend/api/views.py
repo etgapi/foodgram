@@ -31,7 +31,6 @@ from .serializers import (
     ShoppingCartSerializer,
     SubscriptionSerializer,
     TagSerializer,
-    UserAvatarSerializer,
     UserRecipeSerializer
 )
 
@@ -62,7 +61,6 @@ class UserViewSet(djoser_views.UserViewSet):
         methods=('put',),
         detail=False,
         permission_classes=(IsAuthenticated,),
-        serializer_class=UserAvatarSerializer,
         url_path='me/avatar',
         url_name='me-avatar',
     )
@@ -281,6 +279,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=True,
         url_path='get-link',
         url_name='get-link',
+        permission_classes=[AllowAny, ]
     )
     def get_link(self, request, pk=None):
         recipe = self.get_object()

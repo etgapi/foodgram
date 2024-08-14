@@ -73,6 +73,7 @@ class CustomUserSerializer(UserSerializer):
         validators=(username_validator,)
     )
     is_subscribed = serializers.SerializerMethodField(read_only=True)
+    avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = User
@@ -98,15 +99,6 @@ class CustomUserSerializer(UserSerializer):
         )
 
 
-class UserAvatarSerializer(serializers.ModelSerializer):
-    """Сериализатор для аватара пользователя"""
-    avatar = Base64ImageField(allow_null=True)
-
-    class Meta:
-        model = User
-        fields = ('avatar',)
-
-
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Сериализатор для подписчиков"""
 
@@ -120,6 +112,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         slug_field='username',
         default=serializers.CurrentUserDefault(),
     )
+    avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Subscription
@@ -155,7 +148,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = "__all__"
+        fields = ('id', 'name', 'slug')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -163,7 +156,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = "__all__"
+        fields = ('id', 'name', 'measurement_unit')
 
 
 class ReceipeIngredientGetSerializer(serializers.ModelSerializer):
