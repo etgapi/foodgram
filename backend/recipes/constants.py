@@ -1,4 +1,3 @@
-
 # recipes/models.py
 TAG_MAX_LENGTH = 32
 SLUG_MAX_LENGTH = 32

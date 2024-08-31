@@ -2,14 +2,12 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from recipes.constants import MIN_INGEDIENT_AMOUNT
-from .models import (
-    Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
-)
+from .models import Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'slug']
-    list_display_links = ['id', 'name', 'slug']
+    list_display = ["id", "name", "slug"]
+    list_display_links = ["id", "name", "slug"]
 
 
 class IngredientAdmin(admin.ModelAdmin):
@@ -17,9 +15,9 @@ class IngredientAdmin(admin.ModelAdmin):
         "name",
         "measurement_unit",
     )
-    list_display_links = ('name',)
-    search_fields = ('name',)
-    search_help_text = 'Поиск по названию ингредиента'
+    list_display_links = ("name",)
+    search_fields = ("name",)
+    search_help_text = "Поиск по названию ингредиента"
     list_filter = ("name",)
 
 
@@ -30,48 +28,46 @@ class RecipeIngredientInline(admin.TabularInline):
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author')
-    list_display_links = ('name', 'author')
-    search_fields = ('name', 'author__username')
-    search_help_text = 'Поиск по названию рецепта или имени пользователя'
-    filter_horizontal = ('tags',)
-    list_filter = ('tags',)
-    readonly_fields = ('in_favorites',)
+    list_display = ("name", "author")
+    list_display_links = ("name", "author")
+    search_fields = ("name", "author__username")
+    search_help_text = "Поиск по названию рецепта или имени пользователя"
+    filter_horizontal = ("tags",)
+    list_filter = ("tags",)
+    readonly_fields = ("in_favorites",)
     inlines = (RecipeIngredientInline,)
 
     fieldsets = (
         (
             None,
             {
-                'fields': (
-                    'author',
-                    ('name', 'cooking_time', 'in_favorites'),
-                    'text',
-                    'image',
-                    'tags',
+                "fields": (
+                    "author",
+                    ("name", "cooking_time", "in_favorites"),
+                    "text",
+                    "image",
+                    "tags",
                 )
             },
         ),
     )
 
     @admin.display(
-        description=format_html(
-            '<strong>Число добавлений рецепта в избранное</strong>'
-            )
+        description=format_html("<strong>Число добавлений рецепта в избранное</strong>")
     )
     def in_favorites(self, obj):
         return Favorite.objects.filter(recipe=obj).count()
 
 
 class FavoriteAdmin(admin.ModelAdmin):
-    
-    list_display = ('id', '__str__')
-    list_display_links = ('id', '__str__')
+
+    list_display = ("id", "__str__")
+    list_display_links = ("id", "__str__")
 
 
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('id', '__str__')
-    list_display_links = ('id', '__str__')
+    list_display = ("id", "__str__")
+    list_display_links = ("id", "__str__")
 
 
 admin.site.register(Tag, TagAdmin)

@@ -13,57 +13,56 @@ from users.validators import (
 class User(AbstractUser):
     """Модель для пользователей"""
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = (
-        'username',
-        'first_name',
-        'last_name',
-        'password',
+        "username",
+        "first_name",
+        "last_name",
+        "password",
     )
 
     email = models.EmailField(
-        verbose_name='Адрес электронной почты',
+        verbose_name="Адрес электронной почты",
         max_length=MAX_EMAIL_LENGTH,
         unique=True,
         error_messages={
-            'unique': 'Данный адрес уже существует',
+            "unique": "Данный адрес уже существует",
         },
     )
 
     username = models.CharField(
-        verbose_name='Логин',
+        verbose_name="Логин",
         max_length=MAX_NAME_LENGTH,
-        validators=[UnicodeUsernameValidator(
-            message='Имя пользователя содержит недопустимые символы'
-        )],
+        validators=[
+            UnicodeUsernameValidator(
+                message="Имя пользователя содержит недопустимые символы"
+            )
+        ],
         unique=True,
         error_messages={
-            'unique': 'Пользователь с таким именем уже существует',
-        }
+            "unique": "Пользователь с таким именем уже существует",
+        },
     )
     first_name = models.CharField(
-        verbose_name='Имя',
+        verbose_name="Имя",
         max_length=MAX_NAME_LENGTH,
-        validators=(first_name_validator,)
+        validators=(first_name_validator,),
     )
 
     last_name = models.CharField(
-        verbose_name='Фамилия',
+        verbose_name="Фамилия",
         max_length=MAX_NAME_LENGTH,
-        validators=(last_name_validator,)
+        validators=(last_name_validator,),
     )
 
     avatar = models.ImageField(
-        verbose_name='Аватар',
-        upload_to='users/',
-        blank=True,
-        null=True
+        verbose_name="Аватар", upload_to="users/", blank=True, null=True
     )
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-        ordering = ('username',)
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+        ordering = ("username",)
 
     def __str__(self):
         return self.username
@@ -72,37 +71,36 @@ class User(AbstractUser):
 class Subscription(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        verbose_name='Автор',
+        verbose_name="Автор",
         on_delete=models.CASCADE,
-        related_name='subscribers',
+        related_name="subscribers",
     )
     subscriber = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        verbose_name='Подписчик',
+        verbose_name="Подписчик",
         on_delete=models.CASCADE,
-        related_name='subscriptions',
+        related_name="subscriptions",
     )
     date_added = models.DateTimeField(
-        verbose_name='Подписался',
+        verbose_name="Подписался",
         auto_now_add=True,
         editable=False,
     )
 
     class Meta:
-        ordering = ('id', )
-        verbose_name = 'Подписка'
+        ordering = ("id",)
+        verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
         constraints = (
             models.UniqueConstraint(
-                fields=('author', 'subscriber'),
-                name='Такая подписка уже есть',
+                fields=("author", "subscriber"),
+                name="Такая подписка уже есть",
             ),
             models.CheckConstraint(
-                check=~models.Q(author=models.F('subscriber')),
-                name='Нет смысла в подписке на себя',
+                check=~models.Q(author=models.F("subscriber")),
+                name="Нет смысла в подписке на себя",
             ),
         )
 
     def __str__(self) -> str:
-        return f'{self.subscriber.username} -> {self.author.username}'
-    
+        return f"{self.subscriber.username} -> {self.author.username}"
