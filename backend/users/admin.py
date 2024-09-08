@@ -18,8 +18,8 @@ class UserAdmin(AuthUserAdmin):
 
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = (
+        "user",
         "author",
-        "subscriber",
     )
 
 

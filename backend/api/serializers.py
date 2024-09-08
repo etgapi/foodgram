@@ -48,17 +48,15 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             ),
         ),
     )
+    password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
         fields = ("email", "id", "username", "first_name", "last_name", "password")
-        extra_kwargs = {
-            "email": {"required": True},
-            "username": {"required": True},
-            "first_name": {"required": True},
-            "last_name": {"required": True},
-            "password": {"required": True, "write_only": True},
-        }
+ 
+    def validate_password(self, value):
+        print(value, 'FFFFFFFFFFFFFFFFFFFFFFFF')
+        return value
 
 
 class CustomUserSerializer(UserSerializer):
@@ -99,43 +97,39 @@ class CustomUserSerializer(UserSerializer):
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Сериализатор для подписчиков"""
 
+    user = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="username",
+        default=serializers.CurrentUserDefault(),
+    )
     author = serializers.SlugRelatedField(
         slug_field="username",
         queryset=User.objects.all(),
     )
 
-    subscriber = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field="username",
-        default=serializers.CurrentUserDefault(),
-    )
-
     class Meta:
         model = Subscription
-        fields = (
-            "author",
-            "subscriber",
-        )
+        fields = ( "user", "author",)
 
         validators = (
             validators.UniqueTogetherValidator(
                 queryset=model.objects.all(),
-                fields=("author", "subscriber"),
-                message=("Такая подписка уже есть"),
+                fields=('user', 'author'),
+                message=('Вы уже подписаны на данного автора!'),
             ),
         )
 
     def validate_author(self, value):
-        if self.context["user"] == value:
+        if self.context['user']== value:
             raise serializers.ValidationError(
-                detail="Нельзя подписаться на самого себя!",
+                detail='Нельзя подписаться на себя!',
             )
         return value
 
     def to_representation(self, instance):
         return UserRecipeSerializer(
             instance.author,
-            context=self.context
+            context=self.context,
         ).data
 
 
@@ -347,13 +341,13 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Favorite
-        fields = ("author", "recipe")
-        read_only_fields = ("author",)
+        fields = ("user", "recipe")
+        read_only_fields = ("user",)
 
     def validate(self, attrs):
         recipe = attrs["recipe"]
         user = self.context["request"].user
-        if Favorite.objects.filter(author=user, recipe=recipe).exists():
+        if Favorite.objects.filter(user=user, recipe=recipe).exists():
             raise serializers.ValidationError("Рецепт уже добавлен в избранное")
         return attrs
 
@@ -366,13 +360,13 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShoppingCart
-        fields = ("author", "recipe")
-        read_only_fields = ("author",)
+        fields = ("user", "recipe")
+        read_only_fields = ("user",)
 
     def validate(self, attrs):
         recipe = attrs["recipe"]
         user = self.context["request"].user
-        if ShoppingCart.objects.filter(author=user, recipe=recipe).exists():
+        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
             raise serializers.ValidationError("Рецепт уже добавлен в список рецептов")
         return attrs
 

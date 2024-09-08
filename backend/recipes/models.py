@@ -12,6 +12,7 @@ from recipes.constants import (
     SLUG_MAX_LENGTH,
     TAG_MAX_LENGTH,
     UNIT_MAX_LENGTH,
+    URL_LENGTH,
 )
 from users.models import User
 
@@ -86,6 +87,7 @@ class Recipe(models.Model):
             ),
         ],
     )
+    short_link = models.URLField(max_length=URL_LENGTH, blank=True)
 
     class Meta:
         ordering = ("-creation_date",)
@@ -140,7 +142,7 @@ class RecipeIngredient(models.Model):
 class Favorite(models.Model):
     """Модель списка избранного"""
 
-    author = models.ForeignKey(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
@@ -156,18 +158,18 @@ class Favorite(models.Model):
         verbose_name_plural = "Список избранного"
         constraints = [
             models.UniqueConstraint(
-                fields=["author", "recipe"], name="Рецепт уже есть в избранном"
+                fields=["user", "recipe"], name="Рецепт уже есть в избранном"
             )
         ]
 
     def __str__(self):
-        return f"{self.recipe.name}" " в избранном у " f"{self.author.username}"
+        return f"{self.recipe.name}" " в избранном у " f"{self.user.username}"
 
 
 class ShoppingCart(models.Model):
     """Модель списка покупок"""
 
-    author = models.ForeignKey(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
@@ -183,9 +185,9 @@ class ShoppingCart(models.Model):
         verbose_name_plural = "Список покупок"
         constraints = [
             models.UniqueConstraint(
-                fields=["author", "recipe"], name="Рецепт уже есть в списке покупок"
+                fields=["user", "recipe"], name="Рецепт уже есть в списке покупок"
             )
         ]
 
     def __str__(self):
-        return f"{self.recipe.name!r}" " в списке покупок " f"{self.author.username!r}"
+        return f"{self.recipe.name!r}" " в списке покупок " f"{self.user.username!r}"

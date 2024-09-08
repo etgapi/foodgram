@@ -69,22 +69,17 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        verbose_name="Автор",
-        on_delete=models.CASCADE,
-        related_name="subscribers",
-    )
-    subscriber = models.ForeignKey(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="Подписчик",
         on_delete=models.CASCADE,
         related_name="subscriptions",
     )
-    date_added = models.DateTimeField(
-        verbose_name="Подписался",
-        auto_now_add=True,
-        editable=False,
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="Автор",
+        on_delete=models.CASCADE,
+        related_name="subscribers",
     )
 
     class Meta:
@@ -93,14 +88,14 @@ class Subscription(models.Model):
         verbose_name_plural = "Подписки"
         constraints = (
             models.UniqueConstraint(
-                fields=("author", "subscriber"),
+                fields=("user", "author"),
                 name="Такая подписка уже есть",
             ),
             models.CheckConstraint(
-                check=~models.Q(author=models.F("subscriber")),
+                check=~models.Q(author=models.F("user")),
                 name="Нет смысла в подписке на себя",
             ),
         )
 
     def __str__(self) -> str:
-        return f"{self.subscriber.username} -> {self.author.username}"
+        return f"{self.user.username} -> {self.author.username}"
