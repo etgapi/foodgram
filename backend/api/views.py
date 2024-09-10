@@ -383,6 +383,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response["Content-Disposition"] = 'attachment; filename="shopping_list.txt"'
         return response
 
+    #ШАГ 1: КОПИРОВАТЬ/КОДИРОВАТЬ (ссылку)
     @action(
         methods=["get"],
         detail=True,
@@ -392,22 +393,39 @@ class RecipeViewSet(viewsets.ModelViewSet):
             AllowAny,
         ],
     )
+    #Пример айди ссылки на рецепт http://localhost/recipes/1
+    #path("s/<str:encoded_id>/", ShortLinkView.as_view(), name="shortlink")
     def get_link(self, request, pk=None):
         recipe = self.get_object()
+        #Кодируем "обычную" ссылку -> в "короткую"
         encoded_id = baseconv.base64.encode(str(recipe.id))
+        #request.build_absolute_uri - это метод для получения 
+        #полного/абсолютного URL (с доменом http://localhost/)
         short_link = request.build_absolute_uri(
+            #reverse('view_name', args=(obj.pk, ))
             reverse("shortlink", kwargs={"encoded_id": encoded_id})
         )
         return Response({"short-link": short_link}, status=status.HTTP_200_OK)
+        #БЫЛО:  http://localhost/recipes/1
+        #СТАЛО: http://localhost/s/1/
 
-
+ #ШАГ 2: ВСТАВИТЬ/ДЕКОДИРОВАТЬ (ссылку)
 class ShortLinkView(APIView):
     def get(self, request, encoded_id):
+        #Метод set.issubset() позволяет проверить находится ли каждый элемент
+        # множества set в последовательности other.
+        # Метод возвращает True, если множество set является подмножеством
+        # итерируемого объекта other, если нет, то вернет False.
         if not set(encoded_id).issubset(set(baseconv.BASE64_ALPHABET)):
             return Response(
                 {"error": "Недопустимые символы в ссылке на рецепт"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        #Декодируем "короткую" ссылку -> в "обычную" айди ссылку на рецепт
         recipe_id = baseconv.base64.decode(encoded_id)
         recipe = get_object_or_404(Recipe, id=recipe_id)
+        #request.build_absolute_uri - это метод для получения 
+        #полного/абсолютного URL (с доменом http://localhost/)
         return HttpResponseRedirect(request.build_absolute_uri(f"/recipes/{recipe.id}"))
+        #БЫЛО:  http://localhost/s/1/
+        #СТАЛО: http://localhost/recipes/1
