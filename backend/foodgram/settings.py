@@ -1,5 +1,4 @@
 import os
-from distutils.util import strtobool
 from pathlib import Path
 
 # # Подключение к настройкам файла .env секретов
@@ -15,8 +14,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-mutbua#(#^l0cfy-#m^q$ly&^o=$42p-=lp-y9&$o6r8-#u9)e'
 SECRET_KEY = os.getenv(
     "SECRET_KEY", "django-insecure-mutbua#(#^l0cfy-#m^q$ly&^o=$42p-=lp-y9&$o6r8-#u9)e"
 )
@@ -28,7 +25,8 @@ DEBUG = os.getenv("DEBUG", "").lower() == "true"
 # внешний IP-адрес нашего сервера, адрес 127.0.0.1 , localhost и домен
 # ваш_домен – это ваше доменное имя для проекта.
 # Пример:
-# ALLOWED_HOSTS = ['51.250.105.173', '127.0.0.1', 'localhost', 'pussycat.webhop.me']
+# ALLOWED_HOSTS =
+# ['51.250.105.173', '127.0.0.1', 'localhost', 'pussycat.webhop.me']
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1, localhost").split(", ")
 # ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 

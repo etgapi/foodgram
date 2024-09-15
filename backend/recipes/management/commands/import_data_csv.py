@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient, Tag
 
-
 DATA_ROOT = os.path.join(settings.BASE_DIR, "data")
 TABLES_DICT = {
     Ingredient: "ingredients.csv",

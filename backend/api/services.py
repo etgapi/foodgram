@@ -1,5 +1,4 @@
 from django.http import HttpResponse
-
 from recipes.models import AmountIngredient
 
 

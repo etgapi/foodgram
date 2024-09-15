@@ -1,43 +1,30 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef, Sum
-from django.http import HttpResponse, HttpResponseRedirect, Http404
-
-from django_filters.rest_framework import DjangoFilterBackend
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import baseconv
-from djoser.serializers import SetPasswordSerializer
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as djoser_views
-from rest_framework import permissions, serializers, status, validators, viewsets
+from djoser.serializers import SetPasswordSerializer
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from users.models import Subscription
 
 from api.filters import IngredientFilter
 from api.permissions import IsAuthorOrReadOnly
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from users.models import Subscription
 
-from .filters import RecipeFilter, IngredientFilter
+from .filters import RecipeFilter
 from .pagination import LimitPagePagination
-from .serializers import (
-    CustomUserCreateSerializer,
-    CustomUserSerializer,
-    FavoriteSerializer,
-    IngredientSerializer,
-    CustomUserSerializer,
-    CustomUserCreateSerializer,
-    RecipeCreateUpdateSerializer,
-    RecipeIngredient,
-    RecipeSerializer,
-    SetPasswordSerializer,
-    ShoppingCartSerializer,
-    ShortInfoRecipeSerializer,
-    SubscriptionSerializer,
-    TagSerializer,
-)
+from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
+                          IngredientSerializer, RecipeCreateUpdateSerializer,
+                          RecipeIngredient, RecipeSerializer,
+                          ShortInfoRecipeSerializer, SubscriptionSerializer,
+                          TagSerializer)
 
 User = get_user_model()
 
@@ -47,7 +34,6 @@ class UserViewSet(djoser_views.UserViewSet):
 
     pagination_class = LimitPagePagination
     permission_classes = (permissions.AllowAny,)
-
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -59,7 +45,7 @@ class UserViewSet(djoser_views.UserViewSet):
         if self.action == 'subscriptions':
             return Subscription.objects.filter(user=self.request.user)
         return User.objects.all()
-    
+
     @action(
         methods=("get",),
         detail=False,
@@ -67,30 +53,6 @@ class UserViewSet(djoser_views.UserViewSet):
     )
     def me(self, request, *args, **kwargs):
         return super().me(request, *args, **kwargs)
-    
-    @action(
-        ['POST'],
-        detail=False,
-        permission_classes=[IsAuthenticated, ]
-    )
-    def set_password(self, request, *args, **kwargs):
-        user = request.user
-        serializer = SetPasswordSerializer(
-            data=request.data,
-            context={'request': request}
-        )
-        
-        serializer.update(
-            instance=self.request.user,
-            validated_data=serializer.validated_data
-        )
-        serializer.is_valid(raise_exception=True)
-        user.set_password(serializer.data["new_password"])
-        user.save()
-        return Response(
-            'Пароль успешно изменен',
-            status=status.HTTP_204_NO_CONTENT
-        )
 
     @action(
         methods=("put",),
@@ -121,7 +83,7 @@ class UserViewSet(djoser_views.UserViewSet):
             'Аватар удален.',
             status=status.HTTP_204_NO_CONTENT
         )
-    
+
     @action(
         ["POST"],
         detail=False,
@@ -136,8 +98,10 @@ class UserViewSet(djoser_views.UserViewSet):
         serializer.is_valid(raise_exception=True)
         user.set_password(serializer.data["new_password"])
         user.save()
-        return Response('Пароль успешно изменен.',
-                            status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            'Пароль успешно изменен.',
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(
         methods=("get",),
@@ -147,7 +111,9 @@ class UserViewSet(djoser_views.UserViewSet):
     )
     def subscriptions(self, request):
         paginate_queryset = self.paginate_queryset(self.get_queryset())
-        serializer = SubscriptionSerializer(paginate_queryset, many=True, context={'request': request})
+        serializer = SubscriptionSerializer(
+            paginate_queryset, many=True, context={'request': request}
+        )
         return self.get_paginated_response(serializer.data)
 
     @action(
@@ -158,12 +124,12 @@ class UserViewSet(djoser_views.UserViewSet):
     def subscribe(self, request, id):
         author = get_object_or_404(User, id=id)
         serializer = SubscriptionSerializer(
-                data={'author': author},
-                context={
-                    'user': request.user,
-                    'request': request,
-                }
-            )
+            data={'author': author},
+            context={
+                'user': request.user,
+                'request': request,
+            }
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user, author=author)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -199,7 +165,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.AllowAny,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
-    pagination_class  = None
+    pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -306,11 +272,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def add_recipe(self, request, pk, model,):
         """Функция добавления рецепта в избранное/список покупок.
-        
+
         Передается запрос, откуда получаем текущего пользователя,
         используемую модель (Favorite или ShopingCart), которая определяет,
         в какой список добавляется рецепт, и pk - id рецепта.
-        Если рецепт уже есть в целевом списке - возвращает False, 
+        Если рецепт уже есть в целевом списке - возвращает False,
         в противном случае возвращает ответ (Response).
 
         Args:
@@ -331,11 +297,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def delete_recipe(self, request, pk, model):
         """Функция удаления рецепта из избранного/списка покупок.
-        
+
         Передается запрос, откуда получаем текущего пользователя,
         используемую модель (Favorite или ShopingCart), которая определяет,
         откуда удаляется рецепт, и pk - id рецепта.
-        Если рецепта нет в целевом списке - возвращает False, 
+        Если рецепта нет в целевом списке - возвращает False,
         в противном случае возвращает ответ (Response).
 
         Args:
@@ -364,7 +330,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         ingredients = (
-            RecipeIngredient.objects.filter(recipe__shopping_cart__user=request.user)
+            RecipeIngredient.objects.filter(
+                recipe__shopping_cart__user=request.user
+            )
             .values(
                 "ingredient__name",
                 "ingredient__measurement_unit",
@@ -380,10 +348,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             for ingredient in ingredients
         ]
         response = HttpResponse(shopping_list, content_type="text/plain")
-        response["Content-Disposition"] = 'attachment; filename="shopping_list.txt"'
+        response["Content-Disposition"] = (
+            'attachment; filename="shopping_list.txt"'
+        )
         return response
 
-    #ШАГ 1: КОПИРОВАТЬ/КОДИРОВАТЬ (ссылку)
+    # ШАГ 1: КОПИРОВАТЬ/КОДИРОВАТЬ (ссылку)
     @action(
         methods=["get"],
         detail=True,
@@ -393,26 +363,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
             AllowAny,
         ],
     )
-    #Пример айди ссылки на рецепт http://localhost/recipes/1
-    #path("s/<str:encoded_id>/", ShortLinkView.as_view(), name="shortlink")
+    # Пример айди ссылки на рецепт http://localhost/recipes/1
+    # path("s/<str:encoded_id>/", ShortLinkView.as_view(), name="shortlink")
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        #Кодируем "обычную" ссылку -> в "короткую"
+        # Кодируем "обычную" ссылку -> в "короткую"
         encoded_id = baseconv.base64.encode(str(recipe.id))
-        #request.build_absolute_uri - это метод для получения 
-        #полного/абсолютного URL (с доменом http://localhost/)
+        # request.build_absolute_uri - это метод для получения
+        # полного/абсолютного URL (с доменом http://localhost/)
         short_link = request.build_absolute_uri(
-            #reverse('view_name', args=(obj.pk, ))
+            # reverse('view_name', args=(obj.pk, ))
             reverse("shortlink", kwargs={"encoded_id": encoded_id})
         )
         return Response({"short-link": short_link}, status=status.HTTP_200_OK)
-        #БЫЛО:  http://localhost/recipes/1
-        #СТАЛО: http://localhost/s/1/
+        # БЫЛО:  http://localhost/recipes/1
+        # СТАЛО: http://localhost/s/1/
 
- #ШАГ 2: ВСТАВИТЬ/ДЕКОДИРОВАТЬ (ссылку)
+
+# ШАГ 2: ВСТАВИТЬ/ДЕКОДИРОВАТЬ (ссылку)
 class ShortLinkView(APIView):
     def get(self, request, encoded_id):
-        #Метод set.issubset() позволяет проверить находится ли каждый элемент
+        # Метод set.issubset() позволяет проверить находится ли каждый элемент
         # множества set в последовательности other.
         # Метод возвращает True, если множество set является подмножеством
         # итерируемого объекта other, если нет, то вернет False.
@@ -421,11 +392,13 @@ class ShortLinkView(APIView):
                 {"error": "Недопустимые символы в ссылке на рецепт"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        #Декодируем "короткую" ссылку -> в "обычную" айди ссылку на рецепт
+        # Декодируем "короткую" ссылку -> в "обычную" айди ссылку на рецепт
         recipe_id = baseconv.base64.decode(encoded_id)
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        #request.build_absolute_uri - это метод для получения 
-        #полного/абсолютного URL (с доменом http://localhost/)
-        return HttpResponseRedirect(request.build_absolute_uri(f"/recipes/{recipe.id}"))
-        #БЫЛО:  http://localhost/s/1/
-        #СТАЛО: http://localhost/recipes/1
+        # request.build_absolute_uri - это метод для получения
+        # полного/абсолютного URL (с доменом http://localhost/)
+        return HttpResponseRedirect(
+            request.build_absolute_uri(f"/recipes/{recipe.id}")
+        )
+        # БЫЛО:  http://localhost/s/1/
+        # СТАЛО: http://localhost/recipes/1

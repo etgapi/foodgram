@@ -13,7 +13,9 @@ class UserAdmin(AuthUserAdmin):
         "last_name",
     )
     search_help_text = "Поиск по указанным полям"
-    list_filter = ("username", "email", "is_staff", "is_superuser", "is_active")
+    list_filter = (
+        "username", "email", "is_staff", "is_superuser", "is_active"
+    )
 
 
 class SubscriptionAdmin(admin.ModelAdmin):

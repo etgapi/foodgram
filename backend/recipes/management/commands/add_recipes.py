@@ -6,10 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from recipes.models import Recipe, IngredientsAmount
-from recipes.models import Tag
-from recipes.models import Ingredient
-
+from recipes.models import Ingredient, IngredientsAmount, Recipe, Tag
 
 User = get_user_model()
 

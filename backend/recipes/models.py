@@ -1,20 +1,13 @@
 from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
-from recipes.constants import (
-    INGREDIENT_MAX_LENGTH,
-    MAX_COOKING_TIME,
-    MAX_INGEDIENT_AMOUNT,
-    MAX_LENGTH,
-    MIN_COOKING_TIME,
-    MIN_INGEDIENT_AMOUNT,
-    SLUG_MAX_LENGTH,
-    TAG_MAX_LENGTH,
-    UNIT_MAX_LENGTH,
-    URL_LENGTH,
-)
 from users.models import User
+
+from recipes.constants import (INGREDIENT_MAX_LENGTH, MAX_COOKING_TIME,
+                               MAX_INGEDIENT_AMOUNT, MAX_LENGTH,
+                               MIN_COOKING_TIME, MIN_INGEDIENT_AMOUNT,
+                               SLUG_MAX_LENGTH, TAG_MAX_LENGTH,
+                               UNIT_MAX_LENGTH, URL_LENGTH)
 
 
 class Tag(models.Model):
@@ -79,15 +72,15 @@ class Recipe(models.Model):
         validators=[
             MinValueValidator(
                 MIN_COOKING_TIME,
-                "Приготовление не должно быть не менее " f"{MIN_COOKING_TIME} минут",
+                "Время приготовления не менее " f"{MIN_COOKING_TIME} минут",
             ),
             MaxValueValidator(
                 MAX_COOKING_TIME,
-                "Приготовление не должно быть дольше " f"{MAX_COOKING_TIME} минут",
+                "Время приготовления не дольше " f"{MAX_COOKING_TIME} минут",
             ),
         ],
     )
-    short_link = models.URLField(max_length=URL_LENGTH, blank=True)
+    # short_link = models.URLField(max_length=URL_LENGTH, blank=True)
 
     class Meta:
         ordering = ("-creation_date",)
@@ -102,7 +95,9 @@ class Recipe(models.Model):
 class RecipeIngredient(models.Model):
     """Модель для ингредиента рецепта"""
 
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, verbose_name="Рецепт"
+    )
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, verbose_name="Ингредиент"
     )
@@ -185,9 +180,10 @@ class ShoppingCart(models.Model):
         verbose_name_plural = "Список покупок"
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "recipe"], name="Рецепт уже есть в списке покупок"
+                fields=["user", "recipe"], name="Рецепт уже в списке покупок"
             )
         ]
 
     def __str__(self):
-        return f"{self.recipe.name!r}" " в списке покупок " f"{self.user.username!r}"
+        return (f"{self.recipe.name!r}" " в списке покупок "
+                f"{self.user.username!r}")
