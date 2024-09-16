@@ -290,7 +290,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Returns:
             Response | False: запрос(Response) или False(bool)
         """
-        recipe = Recipe.objects.filter(pk=pk)
+        recipe = get_object_or_404(Recipe, pk=pk)
         if recipe:
             user = request.user
             if model.objects.filter(recipe=recipe, user=user).exists():
