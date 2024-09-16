@@ -4,15 +4,15 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import baseconv
-from django_filters.rest_framework import DjangoFilterBackend
-from djoser import views as djoser_views
-from djoser.serializers import SetPasswordSerializer
+from django_filters.rest_framework import DjangoFilterBackend # type: ignore
+from djoser import views as djoser_views # type: ignore
+from djoser.serializers import SetPasswordSerializer # type: ignore
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework import permissions, status, viewsets # type: ignore
+from rest_framework.decorators import action # type: ignore
+from rest_framework.permissions import AllowAny, IsAuthenticated # type: ignore
+from rest_framework.response import Response # type: ignore
+from rest_framework.views import APIView # type: ignore
 from users.models import Subscription
 
 from api.filters import IngredientFilter
@@ -72,7 +72,10 @@ class UserViewSet(djoser_views.UserViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(
+            {'avatar': serializer.data['avatar']},
+            status=status.HTTP_200_OK
+        )
 
     @avatar.mapping.delete
     def delete_avatar(self, request):
@@ -270,7 +273,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         return response
 
-    def add_recipe(self, request, pk, model,):
+    def add_recipe(self, request, pk, model):
         """Функция добавления рецепта в избранное/список покупок.
 
         Передается запрос, откуда получаем текущего пользователя,
@@ -287,14 +290,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Returns:
             Response | False: запрос(Response) или False(bool)
         """
-        recipe = get_object_or_404(Recipe, pk=pk)
-        user = request.user
-        if model.objects.filter(recipe=recipe, user=user).exists():
-            return False
-        model.objects.create(recipe=recipe, user=user)
-        serializer = ShortInfoRecipeSerializer(recipe)
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-
+        recipe = Recipe.objects.filter(pk=pk)
+        if recipe:
+            user = request.user
+            if model.objects.filter(recipe=recipe, user=user).exists():
+                return False
+            model.objects.create(recipe=recipe, user=user)
+            serializer = ShortInfoRecipeSerializer(recipe)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            "Рецепт не существует. Проверьте id.",
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     def delete_recipe(self, request, pk, model):
         """Функция удаления рецепта из избранного/списка покупок.
 
@@ -312,7 +320,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Returns:
             Response | False: запрос(Response) или False(bool)
         """
-        user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
         user = request.user
         try:
