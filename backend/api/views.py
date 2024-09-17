@@ -229,8 +229,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=["post"],
         detail=True,
-        url_name="shopping-cart",
-    )
+        url_name="shopping-cart",    )
     def shopping_cart(self, request, pk=None):
         response = self.add_recipe(request, pk, ShoppingCart)
         if not response:
@@ -290,7 +289,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Returns:
             Response | False: запрос(Response) или False(bool)
         """
-        recipe = get_object_or_404(Recipe, pk=pk)
+        recipe = Recipe.objects.filter(pk=pk).first()
         if recipe:
             user = request.user
             if model.objects.filter(recipe=recipe, user=user).exists():
