@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-# # Подключение к настройкам файла .env секретов
+# Подключение к настройкам файла .env секретов
 from dotenv import load_dotenv
 
 # Подключение к настройкам файла .env секретов

@@ -22,7 +22,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         validators=[
             UniqueValidator(
                 queryset=User.objects.all(),
-                message="Адрес почты не уникален",
+                message="Такая электронная почта уже зарегистрирована",
             ),
         ],
     )
@@ -33,7 +33,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             username_validator,
             UniqueValidator(
                 queryset=User.objects.all(),
-                message="Имя не уникально",
+                message="Такое имя логина уже занято",
             ),
         ),
     )
@@ -46,12 +46,12 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         )
 
     def validate_password(self, value):
-        print(value, 'FFFFFFFFFFFFFFFFFFFFFFFF')
+        print(value, "FFFFFFFFFFFFFFFFFFFFFFFF")
         return value
 
 
 class CustomUserSerializer(UserSerializer):
-    """Сериализатор для пользователей"""
+    """Сериализатор для пользователей (модель User)"""
 
     username = serializers.CharField(
         min_length=MIN_API_USERNAME_LENGTH,
@@ -86,7 +86,7 @@ class CustomUserSerializer(UserSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    """Сериализатор для подписчиков"""
+    """Сериализатор для подписчиков (модель Subscription)"""
 
     user = serializers.SlugRelatedField(
         read_only=True,
@@ -105,15 +105,15 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         validators = (
             validators.UniqueTogetherValidator(
                 queryset=model.objects.all(),
-                fields=('user', 'author'),
-                message=('Вы уже подписаны на данного автора!'),
+                fields=("user", "author"),
+                message=("Вы уже подписаны на данного автора!"),
             ),
         )
 
     def validate_author(self, value):
-        if self.context['user'] == value:
+        if self.context["user"] == value:
             raise serializers.ValidationError(
-                detail='Нельзя подписаться на себя!',
+                detail="Нельзя подписаться на самого себя!",
             )
         return value
 
@@ -125,7 +125,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """Сериализатор для тэгов"""
+    """Сериализатор для тэгов (модель Tag)"""
 
     class Meta:
         model = Tag
@@ -133,7 +133,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    """Сериализатор для ингредиентов"""
+    """Сериализатор для ингредиентов (модель Ingredient)"""
 
     class Meta:
         model = Ingredient
@@ -143,10 +143,10 @@ class IngredientSerializer(serializers.ModelSerializer):
 class ReceipeIngredientGetSerializer(serializers.ModelSerializer):
     """Сериализатор для чтения ингредиентов рецепта"""
 
-    id = serializers.ReadOnlyField(source='ingredient.id')
-    name = serializers.ReadOnlyField(source='ingredient.name')
+    id = serializers.ReadOnlyField(source="ingredient.id")
+    name = serializers.ReadOnlyField(source="ingredient.name")
     measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
+        source="ingredient.measurement_unit"
     )
 
     class Meta:
@@ -159,7 +159,7 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
 
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
-        source='ingredient'
+        source="ingredient"
     )
     amount = serializers.IntegerField(
         validators=(
@@ -176,7 +176,7 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
 
 
 class ShortInfoRecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор быстрого просмотра рецептов"""
+    """Сериализатор краткого просмотра рецептов"""
 
     class Meta:
         model = Recipe
@@ -219,7 +219,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientCreateSerializer(
         required=True,
         many=True,
-        source='recipe_ingredients'
+        source="recipe_ingredients"
     )
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True
@@ -227,7 +227,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     cooking_time = serializers.IntegerField(
         validators=(
             MinValueValidator(
-                MIN_COOKING_TIME, message="Так быстро не приготовить!"
+                MIN_COOKING_TIME, message="Ошибка времени приготовления!"
             ),
         )
     )
@@ -248,25 +248,25 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         if not value.get("recipe_ingredients"):
             raise serializers.ValidationError("Добавьте хотя бы 1 ингредиент")
         if not value.get("tags"):
-            raise serializers.ValidationError("Добавьте хотя бы 1 тег.")
+            raise serializers.ValidationError("Добавьте хотя бы 1 тег")
         return value
 
     def validate_ingredients(self, value):
         ingredients = [ingredient["ingredient"] for ingredient in value]
         if len(set(ingredients)) != len(ingredients):
             raise serializers.ValidationError(
-                "Ингредиент не должны повторяться."
+                "Ингредиенты повторяются!"
             )
         return value
 
     def validate_tags(self, value):
         if len(set(value)) != len(value):
-            raise serializers.ValidationError("Теги не должны повторяться.")
+            raise serializers.ValidationError("Теги повторяются!")
         return value
 
     def validate_image(self, image):
         if image is None:
-            raise serializers.ValidationError("Фото блюда обязательно.")
+            raise serializers.ValidationError("Фото блюда обязательно!")
         return image
 
     def create(self, validated_data):
@@ -306,6 +306,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserRecipeSerializer(CustomUserSerializer):
+    """Сериализатор для рецептов пользователей (модель User)"""
 
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField(
@@ -331,6 +332,7 @@ class UserRecipeSerializer(CustomUserSerializer):
         recipes = obj.recipes.all()
         try:
             recipes_limit = int(request.query_params.get("recipes_limit"))
+
         except (ValueError, TypeError):
             pass
         else:
@@ -393,22 +395,22 @@ class SetPasswordSerializer(serializers.Serializer):
 
     class Meta:
         model = User
-        write_only = ('new_password', 'current_password')
+        write_only = ("new_password", "current_password")
 
     def validate(self, data):
-        if not self.context['request'].user.check_password(
-            data.get('current_password')
+        if not self.context["request"].user.check_password(
+            data.get("current_password")
         ):
             raise ValidationError(
-                {'current_password': 'Неправильный пароль'}
+                {"current_password": "Неверный пароль"}
             )
-        if data.get('current_password') == data.get('new_password'):
+        if data.get("current_password") == data.get("new_password"):
             raise ValidationError(
-                {'new_password': 'Новый пароль совпадает с предыдущим!'}
+                {"new_password": "Новый пароль совпадает с предыдущим!"}
             )
         return data
 
     def update(self, instance, validated_data):
-        instance.set_password(validated_data['new_password'])
+        instance.set_password(validated_data["new_password"])
         instance.save()
         return instance
