@@ -45,10 +45,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             "email", "id", "username", "first_name", "last_name", "password"
         )
 
-    def validate_password(self, value):
-        print(value, "FFFFFFFFFFFFFFFFFFFFFFFF")
-        return value
-
 
 class CustomUserSerializer(UserSerializer):
     """Сериализатор для пользователей (модель User)"""
