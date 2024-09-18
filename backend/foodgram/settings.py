@@ -19,16 +19,8 @@ SECRET_KEY = os.getenv(
 )
 
 DEBUG = os.getenv("DEBUG", "").lower() == "true"
-# DEBUG = True
 
-# Добавим в ALLOWED_HOSTS:
-# внешний IP-адрес нашего сервера, адрес 127.0.0.1 , localhost и домен
-# ваш_домен – это ваше доменное имя для проекта.
-# Пример:
-# ALLOWED_HOSTS =
-# ['51.250.105.173', '127.0.0.1', 'localhost', 'pussycat.webhop.me']
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1, localhost").split(", ")
-# ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -81,9 +73,6 @@ WSGI_APPLICATION = "foodgram.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-# 'django'- это любое запасное дофолтное придуманное значение,
-# если отсутствует переменная из файла .env
 
 """
 DATABASES = {
