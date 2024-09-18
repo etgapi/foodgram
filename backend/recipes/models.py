@@ -51,6 +51,7 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
+    """Модель для рецепта"""
 
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -80,7 +81,6 @@ class Recipe(models.Model):
             ),
         ],
     )
-    # short_link = models.URLField(max_length=URL_LENGTH, blank=True)
 
     class Meta:
         ordering = ("-creation_date",)
@@ -102,7 +102,7 @@ class RecipeIngredient(models.Model):
         Ingredient, on_delete=models.CASCADE, verbose_name="Ингредиент"
     )
     amount = models.PositiveSmallIntegerField(
-        "Количество",
+        "Количество ингредиента",
         validators=[
             MinValueValidator(
                 MIN_INGEDIENT_AMOUNT,

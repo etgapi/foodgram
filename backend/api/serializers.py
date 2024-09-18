@@ -9,7 +9,7 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 from rest_framework import serializers, validators
 from rest_framework.validators import UniqueValidator
 from users.constants import (MAX_EMAIL_LENGTH, MAX_NAME_LENGTH,
-                             MIN_API_USERNAME_LENGTH)
+                             MIN_USERNAME_LENGTH_API)
 from users.models import Subscription, User
 from users.validators import username_validator
 
@@ -27,7 +27,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         ],
     )
     username = serializers.CharField(
-        min_length=MIN_API_USERNAME_LENGTH,
+        min_length=MIN_USERNAME_LENGTH_API,
         max_length=MAX_NAME_LENGTH,
         validators=(
             username_validator,
@@ -50,7 +50,7 @@ class CustomUserSerializer(UserSerializer):
     """Сериализатор для пользователей (модель User)"""
 
     username = serializers.CharField(
-        min_length=MIN_API_USERNAME_LENGTH,
+        min_length=MIN_USERNAME_LENGTH_API,
         max_length=MAX_NAME_LENGTH,
         validators=(username_validator,),
     )

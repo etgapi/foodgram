@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef, Sum
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.db.models import Exists, OuterRef
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import baseconv
@@ -17,6 +17,7 @@ from users.models import Subscription
 
 from api.filters import IngredientFilter
 from api.permissions import IsAuthorOrReadOnly
+from api.services import shopping_list_txt
 
 from .filters import RecipeFilter
 from .pagination import LimitPagePagination
@@ -329,36 +330,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return False
 
     @action(
+        ['GET'],
         detail=False,
-        url_path="download_shopping_cart",
-        methods=("get",),
-        permission_classes=(permissions.IsAuthenticated,),
+        permission_classes=[IsAuthenticated, ],
     )
     def download_shopping_cart(self, request):
-        ingredients = (
-            RecipeIngredient.objects.filter(
-                recipe__shopping_cart__user=request.user
+        if not request.user.shopping_cart.exists():
+            return Response(
+                'Список покупок пуст.',
+                status=status.HTTP_404_NOT_FOUND
             )
-            .values(
-                "ingredient__name",
-                "ingredient__measurement_unit",
-            )
-            .order_by("ingredient__name")
-            .annotate(total=Sum("amount"))
-        )
-        shopping_list = ["Список покупок\n"]
-        shopping_list += [
-            f'{ingredient["ingredient__name"]} - '
-            f'{ingredient["total"]} '
-            f'({ingredient["ingredient__measurement_unit"]})\n'
-            for ingredient in ingredients
-        ]
-        response = HttpResponse(shopping_list, content_type="text/plain")
-        response["Content-Disposition"] = (
-            'attachment; filename="shopping_list.txt"'
-        )
-        return response
-
+        return shopping_list_txt(user=request.user)
+        
     @action(
         methods=["get"],
         detail=True,

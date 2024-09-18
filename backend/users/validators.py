@@ -5,7 +5,7 @@ from users.constants import (FIRST_NAME_PATTERN, LAST_NAME_PATTERN,
 
 username_validator = RegexValidator(
     regex=USERNAME_PATTERN,
-    message="Недопустимые символы в логине",
+    message="Недопустимые символы в имени логина",
     code="invalid_username",
 )
 
@@ -16,5 +16,5 @@ first_name_validator = RegexValidator(
 
 last_name_validator = RegexValidator(
     regex=LAST_NAME_PATTERN,
-    message="В фамилии должны быть только буквы пробелы и тире",
+    message="В фамилии могут быть только буквы пробелы и тире",
 )
