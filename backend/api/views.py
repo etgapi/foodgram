@@ -5,15 +5,16 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import baseconv
-from django_filters.rest_framework import DjangoFilterBackend # type: ignore
-from djoser import views as djoser_views # type: ignore
-from djoser.serializers import SetPasswordSerializer # type: ignore
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from djoser import views as djoser_views  # type: ignore
+from djoser.serializers import SetPasswordSerializer  # type: ignore
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from rest_framework import permissions, status, viewsets # type: ignore
-from rest_framework.decorators import action # type: ignore
-from rest_framework.permissions import AllowAny, IsAuthenticated # type: ignore
-from rest_framework.response import Response # type: ignore
-from rest_framework.views import APIView # type: ignore
+from rest_framework import permissions, status, viewsets  # type: ignore
+from rest_framework.decorators import action  # type: ignore
+from rest_framework.permissions import AllowAny  # type: ignore
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response  # type: ignore
+from rest_framework.views import APIView  # type: ignore
 from users.models import Subscription
 
 from api.filters import IngredientFilter
@@ -24,9 +25,8 @@ from .filters import RecipeFilter
 from .pagination import LimitPagePagination
 from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
                           IngredientSerializer, RecipeCreateUpdateSerializer,
-                          RecipeIngredient, RecipeSerializer,
-                          ShortInfoRecipeSerializer, SubscriptionSerializer,
-                          TagSerializer)
+                          RecipeSerializer, ShortInfoRecipeSerializer,
+                          SubscriptionSerializer, TagSerializer)
 
 User = get_user_model()
 
@@ -231,7 +231,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=["post"],
         detail=True,
-        url_name="shopping-cart",    )
+        url_name="shopping-cart",
+    )
     def shopping_cart(self, request, pk=None):
         response = self.add_recipe(request, pk, ShoppingCart)
         if not response:
@@ -298,12 +299,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 return False
             model.objects.create(recipe=recipe, user=user)
             serializer = ShortInfoRecipeSerializer(recipe)
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                data=serializer.data, status=status.HTTP_201_CREATED
+            )
         return Response(
             "Рецепт не существует. Проверьте id.",
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
     def delete_recipe(self, request, pk, model):
         """Функция удаления рецепта из избранного/списка покупок.
 
@@ -342,7 +345,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
         return shopping_list_txt(user=request.user)
-        
+
     @action(
         methods=["get"],
         detail=True,
