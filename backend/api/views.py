@@ -1,3 +1,4 @@
+# ВЕРСИЯ БЕЗ ДЕПЛОЯ
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpResponseRedirect
