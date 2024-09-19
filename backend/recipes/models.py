@@ -7,11 +7,11 @@ from recipes.constants import (INGREDIENT_MAX_LENGTH, MAX_COOKING_TIME,
                                MAX_INGEDIENT_AMOUNT, MAX_LENGTH,
                                MIN_COOKING_TIME, MIN_INGEDIENT_AMOUNT,
                                SLUG_MAX_LENGTH, TAG_MAX_LENGTH,
-                               UNIT_MAX_LENGTH, URL_LENGTH)
+                               UNIT_MAX_LENGTH)
 
 
 class Tag(models.Model):
-    """Модель для тегов"""
+    """Модель для тегов."""
 
     name = models.CharField("Тег", max_length=TAG_MAX_LENGTH, unique=True)
     slug = models.SlugField("Слаг", max_length=SLUG_MAX_LENGTH, unique=True)
@@ -26,7 +26,7 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    """Модель для ингредиентов"""
+    """Модель для ингредиентов."""
 
     name = models.CharField(
         verbose_name="Название ингредиента", max_length=INGREDIENT_MAX_LENGTH
@@ -51,10 +51,10 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    """Модель для рецепта"""
+    """Модель для рецепта."""
 
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
     )
@@ -69,7 +69,7 @@ class Recipe(models.Model):
         Ingredient, verbose_name="Ингредиенты", through="RecipeIngredient"
     )
     cooking_time = models.PositiveSmallIntegerField(
-        "Время приготовления в минутах",
+        "Время приготовления в минутах.",
         validators=[
             MinValueValidator(
                 MIN_COOKING_TIME,
@@ -93,7 +93,7 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    """Модель для ингредиента рецепта"""
+    """Модель для ингредиента рецепта."""
 
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, verbose_name="Рецепт"
@@ -135,7 +135,7 @@ class RecipeIngredient(models.Model):
 
 
 class Favorite(models.Model):
-    """Модель списка избранного"""
+    """Модель списка избранного."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -162,7 +162,7 @@ class Favorite(models.Model):
 
 
 class ShoppingCart(models.Model):
-    """Модель списка покупок"""
+    """Модель списка покупок."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
