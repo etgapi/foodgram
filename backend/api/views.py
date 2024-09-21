@@ -1,38 +1,36 @@
 # ВЕРСИЯ БЕЗ ДЕПЛОЯ
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef
-from django.http import Http404, HttpResponseRedirect
+from django.db.models import Exists, OuterRef, Sum
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import baseconv
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from djoser import views as djoser_views  # type: ignore
 from djoser.serializers import SetPasswordSerializer  # type: ignore
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from rest_framework import permissions, status, viewsets  # type: ignore
 from rest_framework.decorators import action  # type: ignore
 from rest_framework.permissions import AllowAny  # type: ignore
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response  # type: ignore
 from rest_framework.views import APIView  # type: ignore
-from users.models import Subscription
 
-from api.filters import IngredientFilter
-from api.permissions import IsAuthorOrReadOnly
-from api.services import shopping_list_txt
-
-from .filters import RecipeFilter
+from .filters import IngredientFilter, RecipeFilter
 from .pagination import LimitPagePagination
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
                           IngredientSerializer, RecipeCreateUpdateSerializer,
                           RecipeSerializer, ShortInfoRecipeSerializer,
                           SubscriptionSerializer, TagSerializer)
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
+from users.models import Subscription
 
 User = get_user_model()
 
 
 class UserViewSet(djoser_views.UserViewSet):
-    """Вьюсет для модели пользователей"""
+    """Вьюсет для модели пользователей."""
 
     pagination_class = LimitPagePagination
     permission_classes = (permissions.AllowAny,)
@@ -154,7 +152,7 @@ class UserViewSet(djoser_views.UserViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет для модели тегов"""
+    """Вьюсет для модели тегов."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -163,7 +161,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет для модели ингредиентов"""
+    """Вьюсет для модели ингредиентов."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -174,7 +172,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """Вьюсет для рецептов"""
+    """Вьюсет для рецептов."""
 
     http_method_names = ["get", "post", "patch", "delete"]
     pagination_class = LimitPagePagination
@@ -334,17 +332,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return False
 
     @action(
-        ['GET'],
         detail=False,
-        permission_classes=[IsAuthenticated, ],
+        url_path="download_shopping_cart",
+        methods=("get",),
+        permission_classes=(permissions.IsAuthenticated,),
     )
     def download_shopping_cart(self, request):
-        if not request.user.shopping_cart.exists():
-            return Response(
-                'Список покупок пуст.',
-                status=status.HTTP_404_NOT_FOUND
+        ingredients = (
+            RecipeIngredient.objects.filter(
+                recipe__shopping_cart__user=request.user
             )
-        return shopping_list_txt(user=request.user)
+            .values(
+                "ingredient__name",
+                "ingredient__measurement_unit",
+            )
+            .order_by("ingredient__name")
+            .annotate(total=Sum("amount"))
+        )
+        shopping_list = ["Список покупок\n"]
+        shopping_list += [
+            f'{ingredient["ingredient__name"]} - '
+            f'{ingredient["total"]} '
+            f'({ingredient["ingredient__measurement_unit"]})\n'
+            for ingredient in ingredients
+        ]
+        response = HttpResponse(shopping_list, content_type="text/plain")
+        response[
+            "Content-Disposition"
+        ] = 'attachment; filename="shopping_list.txt"'
+        return response
 
     @action(
         methods=["get"],
