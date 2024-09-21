@@ -1,7 +1,8 @@
 from django.core.validators import RegexValidator
 
-from users.constants import (FIRST_NAME_PATTERN, LAST_NAME_PATTERN,
-                             USERNAME_PATTERN)
+from .constants import (
+    FIRST_NAME_PATTERN, LAST_NAME_PATTERN, USERNAME_PATTERN
+)
 
 username_validator = RegexValidator(
     regex=USERNAME_PATTERN,

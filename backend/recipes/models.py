@@ -1,13 +1,19 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from users.models import User
 
-from recipes.constants import (INGREDIENT_MAX_LENGTH, MAX_COOKING_TIME,
-                               MAX_INGEDIENT_AMOUNT, MAX_LENGTH,
-                               MIN_COOKING_TIME, MIN_INGEDIENT_AMOUNT,
-                               SLUG_MAX_LENGTH, TAG_MAX_LENGTH,
-                               UNIT_MAX_LENGTH)
+from .constants import (
+    INGREDIENT_MAX_LENGTH,
+    MAX_COOKING_TIME,
+    MAX_INGEDIENT_AMOUNT,
+    MAX_LENGTH,
+    MIN_COOKING_TIME,
+    MIN_INGEDIENT_AMOUNT,
+    SLUG_MAX_LENGTH,
+    TAG_MAX_LENGTH,
+    UNIT_MAX_LENGTH
+)
+from users.models import User
 
 
 class Tag(models.Model):

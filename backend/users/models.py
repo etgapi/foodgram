@@ -3,12 +3,12 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from users.constants import MAX_EMAIL_LENGTH, MAX_NAME_LENGTH
-from users.validators import first_name_validator, last_name_validator
+from .constants import MAX_EMAIL_LENGTH, MAX_NAME_LENGTH
+from .validators import first_name_validator, last_name_validator
 
 
 class User(AbstractUser):
-    """Модель для пользователей"""
+    """Модель для пользователей."""
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = (
@@ -66,6 +66,7 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
+    """Модель для подписок."""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="Подписчик",

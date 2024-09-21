@@ -5,7 +5,7 @@ from recipes.models import Ingredient, Recipe, User
 
 
 class RecipeFilter(FilterSet):
-    """Фильтр для рецептов по тегам и автору"""
+    """Фильтр для рецептов по тегам и автору."""
 
     tags = AllValuesMultipleFilter(field_name="tags__slug", label="tags")
     author = ModelChoiceFilter(queryset=User.objects.all())
@@ -28,10 +28,9 @@ class RecipeFilter(FilterSet):
 
 
 class IngredientFilter(FilterSet):
-    """Фильтр для ингредиентов"""
+    """Фильтр для ингредиентов."""
 
     name = CharFilter(lookup_expr="istartswith")
-    search_param = "name"
 
     class Meta:
         model = Ingredient

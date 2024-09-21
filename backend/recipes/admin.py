@@ -1,15 +1,21 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from recipes.constants import MIN_INGEDIENT_AMOUNT
-
-from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart, Tag)
+from .constants import MIN_INGEDIENT_AMOUNT
+from .models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag
+)
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "slug"]
-    list_display_links = ["id", "name", "slug"]
+    list_display = ("name", "slug")
+    list_display_links = ("name", "slug")
+    search_fields = ("name", "slug")
 
 
 class IngredientAdmin(admin.ModelAdmin):
@@ -30,11 +36,11 @@ class RecipeIngredientInline(admin.TabularInline):
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ("name", "author")
+    list_display = ("name", "author", "in_favorites")
     list_display_links = ("name", "author")
-    search_fields = ("name", "author__username")
+    search_fields = ("name", "author__username", "ingredients__name")
     search_help_text = "Поиск по названию рецепта или имени пользователя"
-    filter_horizontal = ("tags",)
+    filter_horizontal = ("tags", "ingredients")
     list_filter = ("tags",)
     readonly_fields = ("in_favorites",)
     inlines = (RecipeIngredientInline,)
