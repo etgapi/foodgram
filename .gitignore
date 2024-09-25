@@ -3,7 +3,7 @@ infra/frontend/build
 .env
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+pycache/
 *.py[cod]
 *$py.class
 
@@ -96,7 +96,7 @@ ipython_config.py
 #Pipfile.lock
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
+pypackages/
 
 # Celery stuff
 celerybeat-schedule
