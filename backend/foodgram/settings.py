@@ -83,6 +83,8 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+# Если в папке проекта остался файл со старой базой db.sqlite3,
+# удалите его или переименуйте в db.sqlite3.bak (сделать архивным)
 """
 
 AUTH_PASSWORD_VALIDATORS = [

@@ -7,10 +7,18 @@ volumes:
 
 services:
   db:
+    # На Docker Hub есть готовый образ для PostgreSQL
+    # Имя БД, логин и пароль юзера указываем в файле .env
     # postgres - это название образа
     # 13.4-alpine - это версия образа
     image: postgres:13.4-alpine
+    # Передать в контейнер переменные окружения из файла .env
     env_file: ./.env
+    # Чтобы при удалении контейнера не потерять информацию,
+    # содержащуюся в БД, эту информацию следует хранить вне контейнера,
+    # в Docker volume на хосте
+    # Подключить Docker volume с названием pg_data
+    # В образе PostgreSQL все данные хранятся в папке /var/lib/postgresql/data
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: always
@@ -18,7 +26,8 @@ services:
     container_name: foodgram-back
     # Вместо команды build (создать новый образ) 
     # -> теперь команда image (загрузить готовый образ из DockerHub).
-    # annatsoy/foodgram_backend - это название образа бэкенда на DockerHub
+    # annatsoy - логин, с которым вы зарегистрированы на Docker Hub
+    # /foodgram_backend - это название образа бэкенда на DockerHub
     # latest - это версия образа
     image: annatsoy/foodgram_backend:latest
     env_file: ./.env
@@ -32,7 +41,8 @@ services:
     container_name: foodgram-front
     # Вместо команды build (создать новый образ) 
     # -> теперь команда image (загрузить готовый образ из DockerHub).
-    # annatsoy/oodgram_backend - это название образа фронтенда на DockerHub
+    # annatsoy - логин, с которым вы зарегистрированы на Docker Hub
+    # /foodgram_backend - это название образа фронтенда на DockerHub
     # latest - это версия образа
     image: annatsoy/foodgram_frontend:latest
     depends_on:

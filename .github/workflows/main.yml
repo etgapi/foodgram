@@ -7,7 +7,7 @@ on:
 
 # jobs - это порядок выполнения worflow (алгоритм автоматической работы с репозиторием)
 jobs:
-  # ЗАДАНИЕ с локальными тестами
+  # ЗАДАНИЕ С ЛОКАЛЬНЫМИ ТЕСТАМИ
   tests:
     runs-on: ubuntu-latest
     services:
@@ -49,7 +49,7 @@ jobs:
       run: |
         python -m flake8 backend/
   
-  # ЗАДАНИЕ с docker образами
+  # ЗАДАНИЕ С DOCKER ОБРАЗАМИ
   build_and_push_to_docker_hub:
     name: Push Docker image to DockerHub
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }} 
           password: ${{ secrets.DOCKER_PASSWORD }}
       
-      # Шаг: отправка образа бэкенда на DockerHub
+      # Шаг: отправка ОБРАЗА БЭКЕНДА на DockerHub
       - name: Push to DockerHub backend
         uses: docker/build-push-action@v4
         with:
@@ -78,7 +78,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest 
       
-      # Шаг: отправка образа фронтенда на DockerHub
+      # Шаг: отправка ОБРАЗА ФРОНТЕНДА на DockerHub
       - name: Push to Docker Hub frontend
         uses: docker/build-push-action@v3
         with:
@@ -86,7 +86,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
   
-  # ЗАДАНИЕ: деплой
+  # ЗАДАНИЕ: ДЕПЛОЙ
   deploy:
     runs-on: ubuntu-latest
     needs: 
@@ -107,7 +107,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           # Команды на удаленном сервере
-          # pull - это обновление данных из DockerHub
+          # Переходим в папку infra
+          # pull - это обновление данных (скачивание образов) из DockerHub
           # down - это остановить и удалить контейнеры
           # up -d - это запустить контейнеры ("-d" значит в фоновом режиме/в режиме демона)
           # exec backend python manage.py migrate - запуск миграций на командной строке внутри запущенного контейнера
@@ -124,7 +125,7 @@ jobs:
             sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /static/
             sudo docker system prune -af
   
-  # ЗАДАНИЕ: отправка уведомления в Telegram
+  # ЗАДАНИЕ: ОТПРАВКА УВЕДОМЛЕНИЯ В TELEGRAM
   send_message:
     runs-on: ubuntu-latest
     needs: deploy
