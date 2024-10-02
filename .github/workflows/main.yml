@@ -1,28 +1,49 @@
+# Workflow - это пайплайн, цепочка шагов авто-деплоя (CI и CD)
 name: Main Foodgram workflow
 
 on:
+  # Событие-триггер, после которого должен срабатывать workflow (git push)
   push:
+    # Отслеживаем изменения только в ветке main
     branches:
       - main
 
 # jobs - это порядок выполнения worflow (алгоритм автоматической работы с репозиторием)
+# Например: build, tests, deploy (имена блокам разработчик назначает самостоятельно)
 jobs:
-  # ЗАДАНИЕ С ЛОКАЛЬНЫМИ ТЕСТАМИ
+  # ШАГ 1: Операции для CI 
+  # (копирование кода на раннер, проверка линтером и выполнение тестов)
+  # ЗАДАНИЕ С ЛОКАЛЬНЫМИ ТЕСТАМИ (проверка обновлённого кода)
   tests:
+    # runs-on: в каком окружении будут запущены все команды этой задачи
     runs-on: ubuntu-latest
+    # Блок services аналогичен docker-compose.yml
+    # Установить и запустить сервер PostgreSQL
     services:
       postgres:
+        # запускаем контейнер из образа postgres:13.10
         image: postgres:13
+        # Указываем имя тестовой базы, имя и пароль пользователя в открытом виде,
+        # ведь эта база будет работать только во время прогона тестов
         env:
           # данные из файла .env
+          # указываем переменные окружения для запуска тестов, чтобы Django знал,
+          # куда отправлять запросы к БД: передаём доступы к БД, её адрес и порт
           POSTGRES_USER: foodgram_user
           POSTGRES_PASSWORD: foodgram_password
           POSTGRES_DB: foodgram
+        # прокидываем порт 5432 хоста (раннера) на такой же порт контейнера
         ports:
           - 5432:5432
+        # Эта конструкция описывает проверку готовности сервиса postgres
+        # Если её не будет, то тесты могут запуститься раньше, чем сервер PostgreSQL
+        # В результате тесты опять решат, что базы нет, — и упадут
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    # шаги локальных тестов
+    # шаги локальных тестов (каждый шаг — это отдельная команда)
     steps:
+    # actions - это подключение сторонних готовых workflow
+    # checkout@v3 - клонировать текущий коммит репозитория, в котором запущен workflow
+    # в текущую рабочую директорию раннера
     - uses: actions/checkout@v3
     
     # Шаг: проверки версии python
@@ -40,42 +61,62 @@ jobs:
     
     # Шаг: тесты на flake8
     - name: Test with flake8
+      # Добавляем env-переменные для доступа к БД
       env:
         POSTGRES_USER: foodgram_user
         POSTGRES_PASSWORD: foodgram_password
         POSTGRES_DB: foodgram
+        # Сервер БД запущен в Docker, но его порт проброшен на хост
+        # Поэтому подключаемся к 127.0.0.1:5432
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
       run: |
         python -m flake8 backend/
   
-  # ЗАДАНИЕ С DOCKER ОБРАЗАМИ
+  # ШАГ 2: Операции для CD 
+  # (билд образов, их загрузкf на Docker Hub и перезапуск контейнеров на боевом сервере)
+  # ЗАДАНИЕ С DOCKER ОБРАЗАМИ 
   build_and_push_to_docker_hub:
     name: Push Docker image to DockerHub
     runs-on: ubuntu-latest
+    # Не выполнять сразу, ждать, пока выполнится tests,
+    # иначе на Docker Hub может отправиться образ, который содержит ошибки
     needs: tests
     steps:
       # Шаг: проверка наличия репозитория
       - name: Check out the repo
+        # Получение исходного кода из репозитория
         uses: actions/checkout@v3
       
       # Шаг: создание образа бэкенда
       - name: Set up Docker Buildx
+        # Установка сборщика контейнеров Docker
         uses: docker/setup-buildx-action@v2
       
       # Шаг: авторизация на DockerHub
       - name: Login to Docker 
         uses: docker/login-action@v2
+        # При помощи with передаём в action параметры username и password
+        # секреты: репозиторий -> Settings -> Secrets and Variables → Actions
         with:
           username: ${{ secrets.DOCKER_USERNAME }} 
           password: ${{ secrets.DOCKER_PASSWORD }}
       
       # Шаг: отправка ОБРАЗА БЭКЕНДА на DockerHub
       - name: Push to DockerHub backend
+        # Одновременный билд и пуш образа в Docker Hub
         uses: docker/build-push-action@v4
         with:
+          # Параметр context: ./backend/ указывает, что нужный Dockerfile 
+          # находится в ./backend/
           context: ./backend/
+          # Параметр push: true указывает, что образ нужно не только собрать,
+          # но и отправить на Docker Hub
           push: true
+          # В параметре tags задаётся название и тег для образа.
+          # Для каждого пересобранного образа 
+          # устанавливаем тег latest, чтобы потом
+          # на сервере и в docker-compose.yml не указывать версию
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest 
       
       # Шаг: отправка ОБРАЗА ФРОНТЕНДА на DockerHub
@@ -89,7 +130,8 @@ jobs:
   # ЗАДАНИЕ: ДЕПЛОЙ
   deploy:
     runs-on: ubuntu-latest
-    needs: 
+    needs:
+      # Дождёмся билда всех образов проекта
       - build_and_push_to_docker_hub
     steps:
       # Шаг: проверка наличия репзитория
@@ -100,13 +142,14 @@ jobs:
       # ssh команда - это любые команды, например git push
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
-        # Подключение секретов из actions для репозитория  
+        # Подключение секретов из actions для репозитория
+        # Передаём параметры для action appleboy/scp-action: 
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          # Команды на удаленном сервере
+          # Команды на удаленном сервере (перезапуск Docker Compose)
           # Переходим в папку infra
           # pull - это обновление данных (скачивание образов) из DockerHub
           # down - это остановить и удалить контейнеры
@@ -126,6 +169,8 @@ jobs:
             sudo docker system prune -af
   
   # ЗАДАНИЕ: ОТПРАВКА УВЕДОМЛЕНИЯ В TELEGRAM
+  # Вместо того чтобы отслеживать выполнение workflow в GitHub Actions
+  # В маркетплейсе GitHub Actions есть готовый скрипт для уведомлений в Telegram
   send_message:
     runs-on: ubuntu-latest
     needs: deploy

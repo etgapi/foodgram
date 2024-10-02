@@ -1,11 +1,16 @@
+# docker-compose.yml - это конфиг.файл. Только для боевого режима.
+# В нём образы для контейнеров не билдятся, а скачиваются готовые с Docker Hub.
 version: '3.3'
 
+# Перечень volume
 volumes:
   pg_data:
   static:
   media:
 
+# Перечень контейнеров
 services:
+  # КОНТЕЙНЕР С БАЗОЙ ДАННЫХ (имя выбирает разработчик)
   db:
     # На Docker Hub есть готовый образ для PostgreSQL
     # Имя БД, логин и пароль юзера указываем в файле .env
@@ -22,10 +27,11 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: always
+  # КОНТЕЙНЕР С БЭКЕНДОМ
   backend:
     container_name: foodgram-back
-    # Вместо команды build (создать новый образ) 
-    # -> теперь команда image (загрузить готовый образ из DockerHub).
+    # Вместо команды "build" (создать новый образ) 
+    # -> теперь команда "image" (скачать готовый образ из DockerHub).
     # annatsoy - логин, с которым вы зарегистрированы на Docker Hub
     # /foodgram_backend - это название образа бэкенда на DockerHub
     # latest - это версия образа
@@ -36,10 +42,11 @@ services:
     volumes:
       - static:/static/
       - media:/app/media
+  # КОНТЕЙНЕР С ФРОНТЕНДОМ
   frontend:
     container_name: foodgram-front
     # Вместо команды build (создать новый образ) 
-    # -> теперь команда image (загрузить готовый образ из DockerHub).
+    # -> теперь команда image (скачать готовый образ из DockerHub).
     # annatsoy - логин, с которым вы зарегистрированы на Docker Hub
     # /foodgram_backend - это название образа фронтенда на DockerHub
     # latest - это версия образа
@@ -50,7 +57,7 @@ services:
       - ../frontend/:/app/result_build/
   nginx:
     container_name: foodgram-proxy
-    image: nginx:1.25.4-alpine
+    image: annatsoy/foodgram_gateway
     env_file: ./.env
     depends_on:
       - frontend
@@ -60,8 +67,9 @@ services:
       # 8000 - это внешний порт физический на входе
       # 80 - это порт сети nginx (между docker контейнерами)
       - "8000:80"
+    restart: always
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      # - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/static/

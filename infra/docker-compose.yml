@@ -1,34 +1,54 @@
+# docker-compose.yml - это конфиг.файл. Только для режима отладки.
+# Запускает одновременно всех контейнеры проекта одной командой.
+# Образы для контейнеров билдятся с нуля при каждом запуске.
 version: '3.3'
 
+# Перечень volume (необязательный параметр)
+# Если после двоеточий не указаны настройки -> будут применены дефолтные
 volumes:
   pg_data:
   static:
   media:
 
+# Перечень контейнеров
 services:
+  # КОНТЕЙНЕР С БАЗОЙ ДАННЫХ (имя выбирает разработчик)
   db:
+    # Из какого образа запустить контейнер:
     image: postgres:13.4-alpine
+    # Файл (или список файлов) с переменными окружения
     env_file: ./.env
+    # Какой volume подключить для этого контейнера
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: always
+  # КОНТЕЙНЕР С БЭКЕНДОМ
   backend:
     container_name: foodgram-back
+    # Из какого Dockerfile собирать образ для этого контейнера (где он лежит)
     build: ../backend/
     env_file: ./.env
+    # Какие контейнеры нужно запустить до старта этого контейнера:
     depends_on:
       - db
+    # Список подключаемых к контейнеру volumes (директория контейнера):
     volumes:
       - ../backend:/app
       - static:/static/
       - media:/app/media
+  # КОНТЕЙНЕР С ФРОНТЕНДОМ
   frontend:
     container_name: foodgram-front
+    # Из какого Dockerfile собирать образ для этого контейнера (где он лежит)
     build: ../frontend
+    # Какие контейнеры нужно запустить до старта этого контейнера:
     depends_on:
       - backend
+    # Список подключаемых к контейнеру volumes (директория контейнера):
     volumes:
       - ../frontend/:/app/result_build/
+  # КОНТЕЙНЕР С NGINX (gateway -  точка входа для юзеров)
+  # прокси-сервер, который получает все запросы и возвращать ответы юзеру
   nginx:
     container_name: foodgram-proxy
     image: nginx:1.25.4-alpine
