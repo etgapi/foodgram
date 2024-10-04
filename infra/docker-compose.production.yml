@@ -5,16 +5,30 @@ volumes:
   static:
   media:
 
-
 services:
   db:
+    # На Docker Hub есть готовый образ для PostgreSQL
+    # Имя БД, логин и пароль юзера указываем в файле .env
+    # postgres - это название образа
+    # 13.4-alpine - это версия образа
     image: postgres:13.4-alpine
+    # Передать в контейнер переменные окружения из файла .env
     env_file: ./.env
+    # Чтобы при удалении контейнера не потерять информацию,
+    # содержащуюся в БД, эту информацию следует хранить вне контейнера,
+    # в Docker volume на хосте
+    # Подключить Docker volume с названием pg_data
+    # В образе PostgreSQL все данные хранятся в папке /var/lib/postgresql/data
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: always
   backend:
     container_name: foodgram-back
+    # Вместо команды build (создать новый образ) 
+    # -> теперь команда image (загрузить готовый образ из DockerHub).
+    # annatsoy - логин, с которым вы зарегистрированы на Docker Hub
+    # /foodgram_backend - это название образа бэкенда на DockerHub
+    # latest - это версия образа
     image: annatsoy/foodgram_backend:latest
     env_file: ./.env
     depends_on:
@@ -24,23 +38,31 @@ services:
       - media:/app/media
   frontend:
     container_name: foodgram-front
+    # Вместо команды build (создать новый образ) 
+    # -> теперь команда image (загрузить готовый образ из DockerHub).
+    # annatsoy - логин, с которым вы зарегистрированы на Docker Hub
+    # /foodgram_backend - это название образа фронтенда на DockerHub
+    # latest - это версия образа
     image: annatsoy/foodgram_frontend:latest
     depends_on:
       - backend
     volumes:
-      - ../frontend/:/app/result_build/
+      - ./frontend/:/app/result_build/
   nginx:
     container_name: foodgram-proxy
     image: annatsoy/foodgram_gateway
     env_file: ./.env
     depends_on:
-      - frontend
+      - backend
     ports:
+      # изменили 80:80 на 8000:80, т.к. на удаленном сервере все запросы
+      # перенаправляются на порт 8000, а на локальном -направлялись на порт 80
+      # 8000 - это внешний порт физический на входе
+      # 80 - это порт сети nginx (между docker контейнерами)
       - "8000:80"
-    restart: always
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      # - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/build:/usr/share/nginx/html/
+      - ./frontend/build/docs:/usr/share/nginx/html/api/docs/
       - static:/static/
       - media:/app/media
