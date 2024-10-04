@@ -3,6 +3,6 @@
 По адресу http://localhost изучите фронтенд веб-приложения, а по адресу http://localhost/api/docs/ — спецификацию API.
 
 Адрес сайта: welcome.onthewifi.com
-Логин от админки:
-Пароль от админки:
+Адрес электронной почты: test_an@mail.ru
+Пароль: server9159
 
