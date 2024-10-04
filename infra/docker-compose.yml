@@ -31,15 +31,19 @@ services:
       - ../frontend/:/app/result_build/
   nginx:
     container_name: foodgram-proxy
-    image: nginx:1.25.4-alpine
+    image: annatsoy/foodgram_gateway
     env_file: ./.env
     depends_on:
-      - frontend
+      - backend
     ports:
+      # изменили 80:80 на 8000:80, т.к. на удаленном сервере все запросы
+      # перенаправляются на порт 8000, а на локальном -направлялись на порт 80
+      # 8000 - это внешний порт физический на входе
+      # 80 - это порт сети nginx (между docker контейнерами)
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      # - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./frontend/build:/usr/share/nginx/html/
-      - ./frontend/build/docs/:/usr/share/nginx/html/api/docs/
+      - ./frontend/build/docs:/usr/share/nginx/html/api/docs/
       - static:/static/
       - media:/app/media
