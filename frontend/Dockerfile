@@ -6,7 +6,7 @@ WORKDIR /app
 # package*.json - это аналог requirements.txt
 COPY package*.json ./
 # npm (в Node.js) — это аналог pip (в Python)
-RUN npm install
+RUN npm install --force
 # Исходный код приложения копируется в образ
 COPY . ./
 # Выполняется сборка приложения для публикации на сервере

@@ -175,7 +175,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     http_method_names = ["get", "post", "patch", "delete"]
     pagination_class = LimitPagePagination
-    permission_classes = (IsAuthorOrReadOnly,)
+    # permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
