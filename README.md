@@ -14,10 +14,6 @@
 
 Сайт доступен по адресу: welcome.onthewifi.com
 
-Логин от админки: test_an@mail.ru
-
-Пароль от админки: server9159
-
 ## Стэк используемых технологий
 - Python
 - Django
@@ -48,26 +44,28 @@ ALLOWED_HOSTS      #список доступных хостов
 ### 2. Запуск Docker engine
 ### В корне проекта, где лежит файл docker-compose.yml, выполнить команду:
 ```
-docker compose up -build
+docker compose -f docker-compose.yml up -d
+
+docker compose -f docker-compose.yml exec backend python manage.py makemigrations
+
+docker compose -f docker-compose.yml exec backend python manage.py migrate
+
+docker compose -f docker-compose.yml exec backend python manage.py add_ingredients
+
+docker compose -f docker-compose.yml exec backend python manage.py add_tags
 ```
-В той же директории с файлом docker-compose.yml, но уже в новом терминале git, выполнить команды.
-```
-docker compose exec backend python manage.py makemigrations
-docker compose exec backend python manage.py migrate
-docker compose exec backend python manage.py import_csv
-```
-Последняя команда загружает в бд подготовленный набор необходимых данных(ингредиенты и тэги)
+Последние команды загружают в БД подготовленный набор необходимых данных (ингредиенты и тэги)
 Дополнительно можно создать суперпользователя, для доступа к админ-панели сайта, командой:
 ```
 docker compose exec backend python manage.py createsuperuser
 ```
 Также необходимо скопировать статику для админки Django
 ```
-docker compose exec backend python manage.py collectstatic
+docker compose -f docker-compose.yml exec backend python manage.py collectstatic --no-input
 ```
 И скопировать статику в volume static для бэкенда
 ```
-docker compose exec backend cp -r /app/collected_static/. /backend_static/static/ 
+docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /static/
 ```
 
 Проект Foodgram доступен по адресу http://localhost
