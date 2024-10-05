@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
+from django.contrib.auth.models import Group
 
 from .models import Subscription, User
 
@@ -27,3 +28,5 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Subscription, SubscriptionAdmin)
+# Удаляем из админки вкладку "Группы"
+admin.site.unregister(Group)
