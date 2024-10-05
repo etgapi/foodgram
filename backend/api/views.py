@@ -223,7 +223,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 .all()
             )
 
-        return recipes.order_by("-creation_date")
+        return recipes.order_by("-creation_date").all()
 
     @action(
         methods=["post"],
