@@ -11,11 +11,13 @@
 Зарегистрированным пользователям доступен сервис «Список покупок».
 Он позволяет добавлять в корзину список продуктов, которые нужно купить для блюд.
 Такой список продуктов (с общим количеством ингредиентов) можно скачать в формате txt.
-Страницу любого рецепта можно скопировать при помощи короткой ссылки.
+Страницу любого рецепта можно скопировать при помощи короткой ссылки. 
+Рецепты можно фильтровать по тегам.
+
 
 Сайт доступен по адресу: welcome.onthewifi.com
 
-## Стэк используемых технологий
+## Стек используемых технологий
 - Python
 - Django
 - Django Rest Framework
@@ -69,11 +71,12 @@ docker compose -f docker-compose.yml exec backend python manage.py collectstatic
 docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /static/
 ```
 
-Проект Foodgram доступен по адресу http://localhost
+Проект Foodgram будет доступен по адресу http://localhost
 
-Спецификация API доступна по адресу http://localhost/api/docs/
+Спецификация API http://localhost/api/docs/
 
 ## Автор: 
-Цой Анна 
+Цой Анна
+
 https://github.com/etgapi
 
