@@ -1,6 +1,7 @@
 # Проект Foodgram
 
 Дипломный проект "Яндекс Практикум".
+
 Программа дополнительного профессионального образования «Python-разработчик»
  
 ## Описание
@@ -75,3 +76,4 @@ docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. 
 ## Автор: 
 Цой Анна 
 https://github.com/etgapi
+
